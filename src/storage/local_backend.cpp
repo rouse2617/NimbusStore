@@ -4,7 +4,7 @@
 
 #include "nebulastore/storage/backend.h"
 
-namespace yig::storage {
+namespace nebulastore::storage {
 
 // ================================
 // LocalBackend
@@ -40,4 +40,4 @@ std::string LocalBackend::KeyToPath(const std::string& key) {
     return path;
 }
 
-} // namespace yig::storage
+} // namespace nebulastore::storage

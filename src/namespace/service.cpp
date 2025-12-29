@@ -4,7 +4,7 @@
 
 #include "nebulastore/namespace/service.h"
 
-namespace yig::namespace_ {
+namespace nebulastore::namespace_ {
 
 // ================================
 // PathConverter
@@ -53,4 +53,4 @@ NamespaceService::NamespaceService(Config config)
       metadata_service_(config.metadata_service),
       storage_backend_(config.storage_backend) {}
 
-} // namespace yig::namespace_
+} // namespace nebulastore::namespace_

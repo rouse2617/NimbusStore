@@ -7,7 +7,7 @@
 #include "nebulastore/metadata/btree_index.h"
 #include "nebulastore/common/logger.h"
 
-namespace yig::metadata {
+namespace nebulastore::metadata {
 
 // ================================
 // MetaPartition
@@ -225,4 +225,4 @@ InodeID MetadataServiceImpl::GenerateInodeID() {
     return next_id++;
 }
 
-} // namespace yig::metadata
+} // namespace nebulastore::metadata

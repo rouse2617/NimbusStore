@@ -9,7 +9,7 @@
 #include "nebulastore/storage/backend.h"
 #include "nebulastore/namespace/service.h"
 
-namespace yig::protocol {
+namespace nebulastore::protocol {
 
 // ================================
 // S3 对象 (用于 ListObjects 响应)
@@ -207,4 +207,4 @@ private:
     std::unique_ptr<FUSESession> session_;
 };
 
-} // namespace yig::protocol
+} // namespace nebulastore::protocol

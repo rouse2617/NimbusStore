@@ -6,7 +6,7 @@
 #include <type_traits>
 #include "aifs/common/types.h"
 
-namespace aifs {
+namespace nebulastore {
 
 // ================================
 // 简单的 C++20 协程封装
@@ -161,4 +161,4 @@ ReadyAwaiter<T> MakeReady(T value) {
     return ReadyAwaiter<T>{std::move(value)};
 }
 
-} // namespace aifs
+} // namespace nebulastore

@@ -6,7 +6,7 @@
 #include "aifs/common/types.h"
 #include "aifs/common/async.h"
 
-namespace aifs::metadata {
+namespace nebulastore::metadata {
 
 // ================================
 // 元数据服务接口 (3FS 无状态设计)
@@ -339,4 +339,4 @@ private:
     Config config_;
 };
 
-} // namespace aifs::metadata
+} // namespace nebulastore::metadata

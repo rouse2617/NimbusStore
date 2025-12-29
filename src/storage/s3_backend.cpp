@@ -4,7 +4,7 @@
 
 #include "nebulastore/storage/backend.h"
 
-namespace yig::storage {
+namespace nebulastore::storage {
 
 // ================================
 // S3Backend
@@ -75,4 +75,4 @@ AsyncTask<Status> S3Backend::GetCapacity(CapacityInfo* info) {
     co_return Status::OK();
 }
 
-} // namespace yig::storage
+} // namespace nebulastore::storage

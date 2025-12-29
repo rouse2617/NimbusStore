@@ -4,7 +4,7 @@
 
 #include "nebulastore/metadata/btree_index.h"
 
-namespace yig::metadata {
+namespace nebulastore::metadata {
 
 // ================================
 // BTreeIndex
@@ -48,4 +48,4 @@ bool BTreeIndex::DeleteDentry(InodeID parent, const std::string& name) {
     return dentry_index_.Delete(key);
 }
 
-} // namespace yig::metadata
+} // namespace nebulastore::metadata

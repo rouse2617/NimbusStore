@@ -5,7 +5,7 @@
 #include <cstring>
 #include <arpa/inet.h>
 
-namespace yig::metadata {
+namespace nebulastore::metadata {
 
 // ================================
 // Dentry 编码
@@ -218,4 +218,4 @@ FileLayout RocksDBStore::DecodeLayoutValue(const std::string& value) {
     return layout;
 }
 
-} // namespace yig::metadata
+} // namespace nebulastore::metadata

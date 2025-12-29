@@ -10,7 +10,7 @@
 #include "nebulastore/protocol/gateway.h"
 #include "nebulastore/common/logger.h"
 
-using namespace yig;
+using namespace nebulastore;
 
 namespace {
 

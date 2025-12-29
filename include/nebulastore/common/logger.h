@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <memory>
 
-namespace aifs {
+namespace nebulastore {
 
 // ================================
 // 日志系统
@@ -27,4 +27,4 @@ private:
 #define LOG_ERROR(fmt, ...) spdlog::error(fmt, ##__VA_ARGS__)
 #define LOG_DEBUG(fmt, ...) spdlog::debug(fmt, ##__VA_ARGS__)
 
-} // namespace aifs
+} // namespace nebulastore

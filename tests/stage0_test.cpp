@@ -9,7 +9,7 @@
 #include "nebulastore/storage/backend.h"
 
 namespace fs = std::filesystem;
-namespace yig::test {
+namespace nebulastore::test {
 
 class Stage0Test : public ::testing::Test {
 protected:
@@ -114,7 +114,7 @@ TEST_F(Stage0Test, DeleteFile) {
     // TODO: 验证文件不存在
 }
 
-} // namespace yig::test
+} // namespace nebulastore::test
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);

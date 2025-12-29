@@ -8,7 +8,7 @@
 #include "nebulastore/metadata/metadata_service.h"
 #include "nebulastore/storage/backend.h"
 
-namespace yig::namespace_ {
+namespace nebulastore::namespace_ {
 
 // ================================
 // 路径转换器 (统一命名空间核心)
@@ -95,4 +95,4 @@ private:
     std::shared_ptr<storage::StorageBackend> storage_backend_;
 };
 
-} // namespace yig::namespace_
+} // namespace nebulastore::namespace_

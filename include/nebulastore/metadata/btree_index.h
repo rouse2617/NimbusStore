@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-namespace aifs::metadata {
+namespace nebulastore::metadata {
 
 // ================================
 // 内存 BTree 索引 (CubeFS 设计)
@@ -87,4 +87,4 @@ private:
     BTree<DentryKey, Dentry> dentry_index_;
 };
 
-} // namespace aifs::metadata
+} // namespace nebulastore::metadata

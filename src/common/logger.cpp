@@ -4,7 +4,7 @@
 
 #include "nebulastore/common/logger.h"
 
-namespace yig {
+namespace nebulastore {
 
 Logger* Logger::Instance() {
     static Logger instance;
@@ -17,4 +17,4 @@ void Logger::Init(const std::string& log_file, const std::string& level) {
     // logger_->set_level(spdlog::level::from_str(level));
 }
 
-} // namespace yig
+} // namespace nebulastore

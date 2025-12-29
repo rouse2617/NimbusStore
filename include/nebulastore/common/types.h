@@ -7,7 +7,7 @@
 #include <optional>
 #include <chrono>
 
-namespace aifs {
+namespace nebulastore {
 
 // ================================
 // 基础类型定义
@@ -166,4 +166,4 @@ inline uint64_t NowInMilliSeconds() {
     ).count();
 }
 
-} // namespace aifs
+} // namespace nebulastore

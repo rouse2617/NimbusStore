@@ -7,7 +7,7 @@
 #include "nebulastore/metadata/rocksdb_store.h"
 #include "nebulastore/storage/backend.h"
 
-namespace yig::test {
+namespace nebulastore::test {
 
 // ================================
 // 元数据服务测试
@@ -50,7 +50,7 @@ TEST_F(StorageBackendTest, LocalBackend) {
     // TODO: 测试本地存储后端
 }
 
-} // namespace yig::test
+} // namespace nebulastore::test
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);

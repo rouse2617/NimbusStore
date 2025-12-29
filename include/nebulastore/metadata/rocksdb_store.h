@@ -6,7 +6,7 @@
 #include <memory>
 #include "aifs/metadata/metadata_service.h"
 
-namespace aifs::metadata {
+namespace nebulastore::metadata {
 
 // ================================
 // RocksDB 元数据存储实现
@@ -115,4 +115,4 @@ private:
     std::string inode_value_;
 };
 
-} // namespace aifs::metadata
+} // namespace nebulastore::metadata

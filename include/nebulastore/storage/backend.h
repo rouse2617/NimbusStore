@@ -6,7 +6,7 @@
 #include "nebulastore/common/types.h"
 #include "nebulastore/common/async.h"
 
-namespace yig::storage {
+namespace nebulastore::storage {
 
 // ================================
 // 存储后端接口 (JuiceFS 存算分离设计)
@@ -187,4 +187,4 @@ private:
     std::string KeyToPath(const std::string& key);
 };
 
-} // namespace yig::storage
+} // namespace nebulastore::storage
