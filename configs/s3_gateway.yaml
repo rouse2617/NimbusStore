@@ -1,0 +1,61 @@
+# NebulaStore S3 Gateway 配置
+# 基于 Ceph RGW S3 协议实现
+
+# 服务监听配置
+server:
+  listen_addr: "0.0.0.0"
+  port: 8080
+  workers: 4
+  max_connections: 10000
+
+# 元数据服务连接
+metadata:
+  backend: "rocksdb"
+  db_path: "/tmp/nebula_metadata"
+
+# 存储后端配置
+storage:
+  type: "local"  # local | s3 | ceph
+
+  # 本地存储配置
+  local:
+    data_dir: "/tmp/nebula_data"
+
+  # S3 存储配置 (当 type: s3)
+  s3:
+    access_key: "your_access_key"
+    secret_key: "your_secret_key"
+    region: "us-east-1"
+    endpoint: "http://localhost:9000"  # MinIO
+    bucket: "nebula-data"
+    max_connections: 100
+
+# 认证配置
+auth:
+  type: "aws-v4"  # AWS V4 签名
+  # 静态凭据 (生产环境应使用 IAM)
+  credentials:
+    - access_key: "admin"
+      secret_key: "admin123"
+      user_id: "admin"
+
+# 日志配置
+logging:
+  level: "info"  # debug | info | warn | error
+  file: "/tmp/nebula_s3.log"
+  max_size: 100  # MB
+  max_backups: 10
+  max_age: 30  # days
+
+# 性能配置
+performance:
+  request_timeout: 30  # seconds
+  io_timeout: 60
+  keepalive_timeout: 300
+  max_request_size: 5368709120  # 5GB
+
+# 限流配置 (可选)
+rate_limit:
+  enabled: false
+  requests_per_second: 10000
+  burst: 1000

@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "aifs/common/types.h"
-#include "aifs/common/async.h"
+#include "nebulastore/common/types.h"
+#include "nebulastore/common/async.h"
 
 namespace nebulastore::metadata {
 
@@ -325,7 +325,7 @@ public:
     ) override;
 
 private:
-    // 路径解析: /a/b/c → [root_inode, "a", "b", "c"]
+    // 路径解析: /a/b/c → ["a", "b", "c"]
     std::pair<Status, std::vector<std::string>> ParsePath(
         const std::string& path
     );
@@ -337,6 +337,8 @@ private:
     InodeID GenerateInodeID();
 
     Config config_;
+    std::mutex next_inode_mutex_;
+    InodeID next_inode_ = 2;  // 1 = root
 };
 
 } // namespace nebulastore::metadata

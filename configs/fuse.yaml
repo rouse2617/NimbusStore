@@ -1,0 +1,52 @@
+# NebulaStore FUSE 客户端配置
+# POSIX 文件系统接口
+
+# 挂载配置
+mount:
+  mount_point: "/mnt/nebula"
+  foreground: false
+  allow_other: true
+  big_writes: true
+
+# 元数据服务连接
+metadata:
+  backend: "rocksdb"
+  db_path: "/tmp/nebula_metadata"
+
+# 存储后端配置
+storage:
+  type: "local"
+  data_dir: "/tmp/nebula_data"
+
+# 缓存配置
+cache:
+  # 文件数据缓存
+  data_cache:
+    enabled: true
+    dir: "/tmp/nebula_cache"
+    size_mb: 1024  # 1GB
+
+  # 元数据缓存
+  metadata_cache:
+    enabled: true
+    timeout_seconds: 60
+    max_entries: 100000
+
+# 性能配置
+performance:
+  # 并发配置
+  max_readahead: 131072  # 128KB
+  max_background: 16
+  congestion_threshold: 16
+
+  # 块大小
+  block_size: 4194304  # 4MB chunks
+
+  # 写回策略
+  writeback: true
+  flush_interval: 30  # seconds
+
+# 日志配置
+logging:
+  level: "info"
+  file: "/tmp/nebula_fuse.log"

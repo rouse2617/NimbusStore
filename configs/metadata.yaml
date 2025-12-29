@@ -1,0 +1,36 @@
+# NebulaStore 元数据服务配置
+# 基于 DeepSeek 3FS 无状态设计
+
+# 元数据分区配置
+partitions:
+  - start_inode: 1
+    end_inode: 1000000000  # 10 亿 inode
+    data_dir: "/tmp/nebula_metadata"
+
+# 根目录配置
+root:
+  inode_id: 1
+  uid: 0
+  gid: 0
+  mode: 040755  # drwxr-xr-x
+
+# Raft 配置 (可选，用于分布式模式)
+raft:
+  enabled: false
+  node_id: 1
+  peers:
+    - "127.0.0.1:6761"
+    - "127.0.0.1:6762"
+    - "127.0.0.1:6763"
+
+# 缓存配置
+cache:
+  inode_cache_size: 1000000  # 100 万 inode
+  dentry_cache_size: 2000000  # 200 万 dentry
+  enable_warmup: true
+
+# 性能配置
+performance:
+  parallelism: 4
+  batch_size: 100
+  max_pending_requests: 10000
