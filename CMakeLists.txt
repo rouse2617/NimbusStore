@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(yig VERSION 2.0.0 LANGUAGES CXX)
+project(NebulaStore VERSION 2.0.0 LANGUAGES CXX)
 
 # ================================
 # C++ 标准和编译选项
@@ -38,8 +38,8 @@ add_subdirectory(src)
 # ================================
 # 测试
 # ================================
-option(YIG_BUILD_TESTS "Build tests" ON)
-if(YIG_BUILD_TESTS)
+option(NEBULA_BUILD_TESTS "Build tests" ON)
+if(NEBULA_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()

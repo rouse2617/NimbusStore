@@ -3,11 +3,11 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "yig/common/types.h"
-#include "yig/common/async.h"
-#include "yig/metadata/metadata_service.h"
-#include "yig/storage/backend.h"
-#include "yig/namespace/service.h"
+#include "nebulastore/common/types.h"
+#include "nebulastore/common/async.h"
+#include "nebulastore/metadata/metadata_service.h"
+#include "nebulastore/storage/backend.h"
+#include "nebulastore/namespace/service.h"
 
 namespace yig::protocol {
 

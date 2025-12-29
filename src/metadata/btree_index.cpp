@@ -2,7 +2,7 @@
 // BTree 索引实现骨架 - 等你来完善
 // ================================
 
-#include "yig/metadata/btree_index.h"
+#include "nebulastore/metadata/btree_index.h"
 
 namespace yig::metadata {
 

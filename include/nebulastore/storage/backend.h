@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "yig/common/types.h"
-#include "yig/common/async.h"
+#include "nebulastore/common/types.h"
+#include "nebulastore/common/async.h"
 
 namespace yig::storage {
 

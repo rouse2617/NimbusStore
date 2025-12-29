@@ -2,10 +2,10 @@
 // 元数据分区实现骨架 - 等你来完善
 // ================================
 
-#include "yig/metadata/metadata_service.h"
-#include "yig/metadata/rocksdb_store.h"
-#include "yig/metadata/btree_index.h"
-#include "yig/common/logger.h"
+#include "nebulastore/metadata/metadata_service.h"
+#include "nebulastore/metadata/rocksdb_store.h"
+#include "nebulastore/metadata/btree_index.h"
+#include "nebulastore/common/logger.h"
 
 namespace yig::metadata {
 

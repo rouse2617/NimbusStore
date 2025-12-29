@@ -4,11 +4,11 @@
 
 #include <iostream>
 #include <signal.h>
-#include "yig/metadata/metadata_service.h"
-#include "yig/metadata/rocksdb_store.h"
-#include "yig/storage/backend.h"
-#include "yig/protocol/gateway.h"
-#include "yig/common/logger.h"
+#include "nebulastore/metadata/metadata_service.h"
+#include "nebulastore/metadata/rocksdb_store.h"
+#include "nebulastore/storage/backend.h"
+#include "nebulastore/protocol/gateway.h"
+#include "nebulastore/common/logger.h"
 
 using namespace yig;
 

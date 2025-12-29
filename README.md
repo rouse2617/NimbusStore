@@ -1,10 +1,10 @@
-# YIG 2.0
+# NebulaStore 2.0
 
 > 基于 JuiceFS、CubeFS、DeepSeek 3FS、百度沧海存储融合设计的 AI 训练存储系统
 
 ## 架构设计
 
-详细的架构设计文档请查看: [docs/YIG2.0_ARCHITECTURE.md](../docs/YIG2.0_ARCHITECTURE.md)
+详细的架构设计文档请查看: [docs/NEBULA2.0_ARCHITECTURE.md](../docs/NEBULA2.0_ARCHITECTURE.md)
 
 ## 技术栈
 
@@ -19,8 +19,8 @@
 ## 目录结构
 
 ```
-yig-2.0/
-├── include/yig/           # 公共头文件
+nebulastore/
+├── include/nebulastore/   # 公共头文件
 │   ├── common/            # 通用组件
 │   │   ├── types.h        # 基础类型定义
 │   │   ├── async.h        # 协程支持
@@ -77,13 +77,13 @@ make -j$(nproc)
 
 ```bash
 # 启动元数据服务
-./yig-master --config ../configs/master.yaml
+./nebula-master --config ../configs/master.yaml
 
 # 启动 S3 Gateway
-./yig-s3-gateway --config ../configs/s3_gateway.yaml
+./nebula-s3-gateway --config ../configs/s3_gateway.yaml
 
 # 挂载 POSIX 文件系统
-./yig-fuse --config ../configs/fuse.yaml /mnt/yig
+./nebula-fuse --config ../configs/fuse.yaml /mnt/nebula
 ```
 
 ## 使用示例
@@ -105,8 +105,8 @@ aws s3 ls s3://bucket/data/ --endpoint-url http://localhost:8080
 
 ```bash
 # 同一份数据，可以直接访问
-ls /mnt/yig/data/
-cat /mnt/yig/data/file.txt
+ls /mnt/nebula/data/
+cat /mnt/nebula/data/file.txt
 ```
 
 ## 待实现

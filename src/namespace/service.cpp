@@ -2,7 +2,7 @@
 // 空实现骨架 - 等你来完善
 // ================================
 
-#include "yig/namespace/service.h"
+#include "nebulastore/namespace/service.h"
 
 namespace yig::namespace_ {
 

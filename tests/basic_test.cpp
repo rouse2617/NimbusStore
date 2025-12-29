@@ -3,9 +3,9 @@
 // ================================
 
 #include <gtest/gtest.h>
-#include "yig/metadata/metadata_service.h"
-#include "yig/metadata/rocksdb_store.h"
-#include "yig/storage/backend.h"
+#include "nebulastore/metadata/metadata_service.h"
+#include "nebulastore/metadata/rocksdb_store.h"
+#include "nebulastore/storage/backend.h"
 
 namespace yig::test {
 

@@ -3,10 +3,10 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include "yig/common/types.h"
-#include "yig/common/async.h"
-#include "yig/metadata/metadata_service.h"
-#include "yig/storage/backend.h"
+#include "nebulastore/common/types.h"
+#include "nebulastore/common/async.h"
+#include "nebulastore/metadata/metadata_service.h"
+#include "nebulastore/storage/backend.h"
 
 namespace yig::namespace_ {
 
