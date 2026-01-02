@@ -15,14 +15,12 @@ namespace nebulastore::storage {
 // LocalBackend
 // ================================
 
-LocalBackend::LocalBackend(const Config& config)
-    : config_(config) {
+LocalBackend::LocalBackend(Config config)
+    : config_(std::move(config)) {
     // 确保数据目录存在
     std::filesystem::create_directories(config_.data_dir);
-    LOG_INFO("LocalBackend initialized: {}", config_.data_dir);
+    LOG_INFO("LocalBackend initialized: %s", config_.data_dir.c_str());
 }
-
-LocalBackend::~LocalBackend() = default;
 
 std::string LocalBackend::KeyToPath(const std::string& key) {
     // key 格式: chunks/{inode}/{slice}
@@ -45,26 +43,26 @@ AsyncTask<Status> LocalBackend::Put(
     auto parent_path = std::filesystem::path(path).parent_path();
     std::error_code ec;
     std::filesystem::create_directories(parent_path, ec);
-    if (ec && ec != std::errc::exist) {
-        LOG_ERROR("Failed to create directory: {}", ec.message());
+    if (ec && ec != std::errc::file_exists) {
+        LOG_ERROR("Failed to create directory: %s", ec.message().c_str());
         co_return Status::IO("Failed to create directory: " + ec.message());
     }
 
     // 写入文件
     std::ofstream file(path, std::ios::binary);
     if (!file) {
-        LOG_ERROR("Failed to open file for writing: {}", path);
+        LOG_ERROR("Failed to open file for writing: %s", path.c_str());
         co_return Status::IO("Failed to open file: " + path);
     }
 
     file.write(reinterpret_cast<const char*>(data.data()), data.size());
     if (!file) {
-        LOG_ERROR("Failed to write file: {}", path);
+        LOG_ERROR("Failed to write file: %s", path.c_str());
         co_return Status::IO("Failed to write file: " + path);
     }
 
-    LOG_DEBUG("Written {} bytes to {}", data.size(), path);
-    co_return Status::OK();
+    LOG_DEBUG("Written %zu bytes to %s", data.size(), path.c_str());
+    co_return Status::Ok();
 }
 
 AsyncTask<Status> LocalBackend::Get(
@@ -76,25 +74,27 @@ AsyncTask<Status> LocalBackend::Get(
     // 读取文件
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     if (!file) {
-        LOG_ERROR("Failed to open file for reading: {}", path);
+        LOG_ERROR("Failed to open file for reading: %s", path.c_str());
         co_return Status::NotFound("File not found: " + key);
     }
 
     auto size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    // TODO: 这里需要 ByteBuffer 支持 resize
-    // 暂时使用 vector
     std::vector<uint8_t> buffer(size);
     file.read(reinterpret_cast<char*>(buffer.data()), size);
 
     if (!file) {
-        LOG_ERROR("Failed to read file: {}", path);
+        LOG_ERROR("Failed to read file: %s", path.c_str());
         co_return Status::IO("Failed to read file: " + path);
     }
 
-    LOG_DEBUG("Read {} bytes from {}", size, path);
-    co_return Status::OK();
+    if (data) {
+        data->assign(std::move(buffer));
+    }
+
+    LOG_DEBUG("Read %ld bytes from %s", static_cast<long>(size), path.c_str());
+    co_return Status::Ok();
 }
 
 AsyncTask<Status> LocalBackend::Delete(
@@ -105,12 +105,12 @@ AsyncTask<Status> LocalBackend::Delete(
     std::error_code ec;
     std::filesystem::remove(path, ec);
     if (ec && ec != std::errc::no_such_file_or_directory) {
-        LOG_ERROR("Failed to delete file: {}", ec.message());
+        LOG_ERROR("Failed to delete file: %s", ec.message().c_str());
         co_return Status::IO("Failed to delete file: " + ec.message());
     }
 
-    LOG_DEBUG("Deleted: {}", path);
-    co_return Status::OK();
+    LOG_DEBUG("Deleted: %s", path.c_str());
+    co_return Status::Ok();
 }
 
 AsyncTask<Status> LocalBackend::Exists(
@@ -125,7 +125,7 @@ AsyncTask<Status> LocalBackend::Exists(
         co_return Status::IO("Failed to check file existence");
     }
 
-    co_return exists ? Status::OK() : Status::NotFound("File not found");
+    co_return exists ? Status::Ok() : Status::NotFound("File not found");
 }
 
 AsyncTask<Status> LocalBackend::GetRange(
@@ -151,12 +151,18 @@ AsyncTask<Status> LocalBackend::GetRange(
     std::vector<uint8_t> buffer(size);
     file.read(reinterpret_cast<char*>(buffer.data()), size);
 
+    auto bytes_read = file.gcount();
     if (!file && !file.eof()) {
         co_return Status::IO("Failed to read file range");
     }
 
-    LOG_DEBUG("Read range {}+{} from {}", offset, size, path);
-    co_return Status::OK();
+    if (data) {
+        buffer.resize(bytes_read);
+        data->assign(std::move(buffer));
+    }
+
+    LOG_DEBUG("Read range %lu+%lu from %s", offset, size, path.c_str());
+    co_return Status::Ok();
 }
 
 AsyncTask<Status> LocalBackend::BatchGet(
@@ -172,7 +178,7 @@ AsyncTask<Status> LocalBackend::BatchGet(
         }
     }
 
-    co_return Status::OK();
+    co_return Status::Ok();
 }
 
 AsyncTask<Status> LocalBackend::HealthCheck() {
@@ -184,7 +190,7 @@ AsyncTask<Status> LocalBackend::HealthCheck() {
         co_return Status::IO("Data directory not accessible");
     }
 
-    co_return Status::OK();
+    co_return Status::Ok();
 }
 
 AsyncTask<Status> LocalBackend::GetCapacity(CapacityInfo* info) {
@@ -199,7 +205,7 @@ AsyncTask<Status> LocalBackend::GetCapacity(CapacityInfo* info) {
     info->available_bytes = space.available;
     info->used_bytes = space.capacity - space.available;
 
-    co_return Status::OK();
+    co_return Status::Ok();
 }
 
 } // namespace nebulastore::storage

@@ -1,155 +1,148 @@
-# NebulaStore 2.0
+# NimbusStore
 
-> 基于 JuiceFS、CubeFS、DeepSeek 3FS、百度沧海存储融合设计的 AI 训练存储系统
+A high-performance, S3-compatible object storage system designed for AI training workloads.
 
-## 架构设计
+## Features
 
-详细的架构设计文档请查看: [docs/NEBULA2.0_ARCHITECTURE.md](../docs/NEBULA2.0_ARCHITECTURE.md)
+- **S3 API Compatible** - Works with standard S3 clients (s3cmd, AWS CLI, boto3)
+- **Pluggable Metadata Backend** - RocksDB (default), Redis, or custom backends
+- **High Performance** - Optimized for AI/ML training data access patterns
+- **Modern C++20** - Clean, maintainable codebase
 
-## 技术栈
+## Quick Start
 
-| 组件 | 技术 |
-|-----|------|
-| **语言** | C++20 |
-| **元数据存储** | RocksDB + Raft (可演进到 FoundationDB) |
-| **数据存储** | 可插拔 (S3/MinIO/Ceph/Local) |
-| **网络** | HTTP (S3) + FUSE (POSIX) + RDMA (可选) |
-| **构建** | CMake 3.20+ |
+### Prerequisites
 
-## 目录结构
+- GCC 11+ or Clang 14+ (C++20 support)
+- RocksDB 9.x
+- OpenSSL
+- zlib
 
-```
-nebulastore/
-├── include/nebulastore/   # 公共头文件
-│   ├── common/            # 通用组件
-│   │   ├── types.h        # 基础类型定义
-│   │   ├── async.h        # 协程支持
-│   │   └── logger.h       # 日志系统
-│   ├── metadata/          # 元数据服务
-│   │   ├── metadata_service.h  # 元数据服务接口
-│   │   ├── rocksdb_store.h     # RocksDB 存储
-│   │   └── btree_index.h       # 内存 BTree 索引
-│   ├── storage/           # 存储后端
-│   │   └── backend.h      # 存储后端接口
-│   ├── namespace/         # 统一命名空间
-│   │   └── service.h      # 路径转换 + 统一查询
-│   └── protocol/          # 协议网关
-│       └── gateway.h      # S3 + POSIX 网关
-├── src/                   # 实现文件
-├── tests/                 # 测试
-├── cmake/                 # CMake 模块
-└── scripts/               # 构建和部署脚本
-```
-
-## 快速开始
-
-### 依赖安装
+### Build
 
 ```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install -y \
-    cmake \
-    g++ \
-    libspdlog-dev \
-    librocksdb-dev \
-    libbz2-dev \
-    liblz4-dev \
-    libsnappy-dev \
-    libfuse3-dev \
-    libssl-dev
-
-# 可选: RDMA 支持
-sudo apt install -y \
-    libibverbs-dev \
-    librdmacm-dev
+make
 ```
 
-### 构建
+### Run
 
 ```bash
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
+./build/nebula-master
 ```
 
-### 运行
+The server starts on port 8080 by default.
+
+### Test with s3cmd
 
 ```bash
-# 启动元数据服务
-./nebula-master --config ../configs/master.yaml
+# Configure s3cmd
+cat > ~/.s3cfg << EOF
+[default]
+access_key = test
+secret_key = test
+host_base = localhost:8080
+host_bucket = localhost:8080/%(bucket)
+use_https = False
+signature_v2 = True
+EOF
 
-# 启动 S3 Gateway
-./nebula-s3-gateway --config ../configs/s3_gateway.yaml
+# Create bucket
+s3cmd mb s3://mybucket
 
-# 挂载 POSIX 文件系统
-./nebula-fuse --config ../configs/fuse.yaml /mnt/nebula
+# Upload file
+s3cmd put myfile.txt s3://mybucket/myfile.txt
+
+# Download file
+s3cmd get s3://mybucket/myfile.txt downloaded.txt
+
+# List objects
+s3cmd ls s3://mybucket/
 ```
 
-## 使用示例
+## Architecture
 
-### S3 API
-
-```bash
-# 上传文件
-aws s3 cp /path/to/file.txt s3://bucket/data/file.txt --endpoint-url http://localhost:8080
-
-# 下载文件
-aws s3 cp s3://bucket/data/file.txt /tmp/file.txt --endpoint-url http://localhost:8080
-
-# 列出文件
-aws s3 ls s3://bucket/data/ --endpoint-url http://localhost:8080
+```
+┌─────────────────────────────────────────────────────────┐
+│                    S3 API Layer                         │
+│  (S3Handler, S3Router, S3XMLFormatter)                  │
+├─────────────────────────────────────────────────────────┤
+│                 Metadata Store                          │
+│  (S3MetadataStore + Pluggable Backend)                  │
+├─────────────────────────────────────────────────────────┤
+│              Backend Interface                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │  RocksDB    │  │   Redis     │  │   Custom    │     │
+│  │  Backend    │  │  Backend    │  │   Backend   │     │
+│  └─────────────┘  └─────────────┘  └─────────────┘     │
+├─────────────────────────────────────────────────────────┤
+│                  Data Storage                           │
+│  (Local Filesystem / S3 / Custom)                       │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### POSIX API
+## Project Structure
 
-```bash
-# 同一份数据，可以直接访问
-ls /mnt/nebula/data/
-cat /mnt/nebula/data/file.txt
+```
+NimbusStore/
+├── include/nebulastore/
+│   ├── protocol/          # S3 API implementation
+│   │   ├── s3_handler.h   # S3 operation handlers
+│   │   ├── s3_metadata.h  # Metadata store interface
+│   │   ├── s3_router.h    # Request routing
+│   │   └── s3_xml.h       # XML response generation
+│   ├── metadata/          # Metadata service
+│   ├── storage/           # Storage backends
+│   └── common/            # Utilities
+├── src/                   # Implementation files
+├── tests/                 # Unit tests
+└── third_party/           # Dependencies (mongoose)
 ```
 
-## 待实现
+## Supported S3 Operations
 
-框架已搭建完成，以下是需要完善的核心模块：
+| Operation | Status |
+|-----------|--------|
+| ListBuckets | ✅ |
+| CreateBucket | ✅ |
+| DeleteBucket | ✅ |
+| HeadBucket | ✅ |
+| ListObjects | ✅ |
+| ListObjectsV2 | ✅ |
+| GetObject | ✅ |
+| PutObject | ✅ |
+| DeleteObject | ✅ |
+| HeadObject | ✅ |
 
-- [ ] **RocksDBStore** - 元数据持久化 (`src/metadata/rocksdb_store.cpp`)
-- [ ] **MetaPartition** - 元数据分区管理 (`src/metadata/metadata_partition.cpp`)
-- [ ] **MetadataServiceImpl** - 元数据服务实现 (`src/metadata/metadata_service_impl.cpp`)
-- [ ] **PathConverter** - 路径转换 (`src/namespace/service.cpp`)
-- [ ] **S3Backend** - S3 存储后端 (`src/storage/s3_backend.cpp`)
-- [ ] **LocalBackend** - 本地存储后端 (`src/storage/local_backend.cpp`)
-- [ ] **S3Gateway** - S3 协议实现 (`src/protocol/s3_gateway.cpp`)
-- [ ] **FuseClient** - POSIX 实现 (`src/protocol/fuse_client.cpp`)
+## Adding Custom Metadata Backend
 
-## 开发指南
-
-### 元数据操作流程
+Implement the `MetadataBackend` interface:
 
 ```cpp
-// 1. 创建文件
-auto service = NewMetadataService(config);
-auto status = co_await service->Create("/data/test.txt", 0644, 0, 0);
+class MyBackend : public MetadataBackend {
+public:
+    bool Put(const std::string& key, const std::string& value) override;
+    bool Get(const std::string& key, std::string& value) override;
+    bool Delete(const std::string& key) override;
+    bool Exists(const std::string& key) override;
+    bool BatchPut(const std::vector<std::pair<std::string, std::string>>& kvs) override;
+    std::vector<std::pair<std::string, std::string>> Scan(
+        const std::string& prefix, int limit = 1000) override;
+};
 
-// 2. 写入数据
-auto storage = NewStorageBackend(config);
-co_await storage->Put("chunks/1/0", data);
-
-// 3. 添加 slice
-co_await service->AddSlice(1, {0, 0, data.size(), "chunks/1/0"});
+// Register the backend
+MetadataBackendFactory::Instance().Register("mybackend",
+    [](const std::string& config) {
+        return std::make_unique<MyBackend>(config);
+    });
 ```
 
-### 路径转换
+## Running Tests
 
-```cpp
-// S3 → POSIX
-auto converter = PathConverter("bucket");
-auto posix = converter.S3ToPosix("s3://bucket/data/file.txt");  // /data/file.txt
-
-// POSIX → S3
-auto s3 = converter.PosixToS3("/data/file.txt");  // s3://bucket/data/file.txt
+```bash
+make test       # Basic tests
+make s3-test    # S3 module tests
 ```
 
-## 许可证
+## License
 
 MIT License

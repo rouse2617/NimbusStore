@@ -29,21 +29,19 @@ Status RocksDBStore::Init() {
     options.OptimizeLevelStyleCompaction();
     options.IncreaseParallelism(4);
 
-    // 配置缓存
-    rocksdb::BlockBasedTableOptions table_options;
-    table_options.block_cache = rocksdb::NewLRUCache(config_.cache_size);
-    options.table_factory.reset(rocksdb::NewBlockBasedTableFactory(table_options));
+    // RocksDB 9.x 简化配置 - 使用默认 table factory
+    // 如果需要自定义缓存，可以设置 options.env->SetBackgroundThreads()
 
     // 打开数据库
     auto status = rocksdb::DB::Open(options, config_.db_path, &db_);
     if (!status.ok()) {
-        LOG_ERROR("Failed to open RocksDB: {}", status.ToString());
+        LOG_ERROR("Failed to open RocksDB: %s", status.ToString().c_str());
         return Status::IO("Failed to open RocksDB: " + status.ToString());
     }
 
     options_ = options;
-    LOG_INFO("RocksDB initialized: {}", config_.db_path);
-    return Status::OK();
+    LOG_INFO("RocksDB initialized: %s", config_.db_path.c_str());
+    return Status::Ok();
 }
 
 std::unique_ptr<MetadataStore::Transaction>
@@ -64,12 +62,12 @@ Status RocksDBStore::LookupDentry(
         return Status::NotFound("Dentry not found: " + name);
     }
     if (!status.ok()) {
-        LOG_ERROR("Failed to lookup dentry: {}", status.ToString());
+        LOG_ERROR("Failed to lookup dentry: %s", status.ToString().c_str());
         return Status::IO("Failed to lookup dentry: " + status.ToString());
     }
 
     *dentry = DecodeDentryValue(value);
-    return Status::OK();
+    return Status::Ok();
 }
 
 Status RocksDBStore::LookupInode(
@@ -84,12 +82,12 @@ Status RocksDBStore::LookupInode(
         return Status::NotFound("Inode not found: " + std::to_string(inode));
     }
     if (!status.ok()) {
-        LOG_ERROR("Failed to lookup inode: {}", status.ToString());
+        LOG_ERROR("Failed to lookup inode: %s", status.ToString().c_str());
         return Status::IO("Failed to lookup inode: " + status.ToString());
     }
 
     *attr = DecodeInodeValue(value);
-    return Status::OK();
+    return Status::Ok();
 }
 
 Status RocksDBStore::LookupLayout(
@@ -105,19 +103,19 @@ Status RocksDBStore::LookupLayout(
         layout->inode_id = inode;
         layout->chunk_size = 4 * 1024 * 1024;  // 默认 4MB
         layout->slices.clear();
-        return Status::OK();
+        return Status::Ok();
     }
     if (!status.ok()) {
-        LOG_ERROR("Failed to lookup layout: {}", status.ToString());
+        LOG_ERROR("Failed to lookup layout: %s", status.ToString().c_str());
         return Status::IO("Failed to lookup layout: " + status.ToString());
     }
 
     *layout = DecodeLayoutValue(value);
-    return Status::OK();
+    return Status::Ok();
 }
 
 // ================================
-// Key 编码
+// Key 编码 (public for RocksDBTransaction)
 // ================================
 
 std::string RocksDBStore::EncodeDentryKey(InodeID parent, const std::string& name) {
@@ -161,7 +159,7 @@ std::string RocksDBStore::EncodeLayoutKey(InodeID inode) {
 }
 
 // ================================
-// Value 编码
+// Value 编码 (public for RocksDBTransaction)
 // ================================
 
 // Dentry Value: inode_id(8) + type(4)
@@ -187,7 +185,7 @@ Dentry RocksDBStore::DecodeDentryValue(const std::string& value) {
     Dentry dentry;
 
     if (value.size() < 12) {
-        LOG_ERROR("Invalid dentry value size: {}", value.size());
+        LOG_ERROR("Invalid dentry value size: %zu", value.size());
         return dentry;
     }
 
@@ -259,7 +257,7 @@ InodeAttr RocksDBStore::DecodeInodeValue(const std::string& value) {
     InodeAttr attr{};
 
     if (value.size() < 52) {
-        LOG_ERROR("Invalid inode value size: {}", value.size());
+        LOG_ERROR("Invalid inode value size: %zu", value.size());
         return attr;
     }
 
@@ -447,7 +445,7 @@ Status RocksDBTransaction::CreateDentry(
 
     // 添加到批处理
     batch_.Put(dentry_key_, dentry_value_);
-    return Status::OK();
+    return Status::Ok();
 }
 
 Status RocksDBTransaction::CreateInode(
@@ -473,7 +471,7 @@ Status RocksDBTransaction::CreateInode(
 
     // 添加到批处理
     batch_.Put(inode_key_, inode_value_);
-    return Status::OK();
+    return Status::Ok();
 }
 
 Status RocksDBTransaction::Commit() {
@@ -482,18 +480,92 @@ Status RocksDBTransaction::Commit() {
 
     auto status = db_->Write(write_options, &batch_);
     if (!status.ok()) {
-        LOG_ERROR("Failed to commit transaction: {}", status.ToString());
+        LOG_ERROR("Failed to commit transaction: %s", status.ToString().c_str());
         return Status::IO("Transaction commit failed: " + status.ToString());
     }
 
     committed_ = true;
-    return Status::OK();
+    return Status::Ok();
 }
 
 Status RocksDBTransaction::Rollback() {
     batch_.Clear();
     committed_ = true;  // 标记为已提交，避免析构时再次回滚
-    return Status::OK();
+    return Status::Ok();
+}
+
+// ================================
+// 删除操作
+// ================================
+
+Status RocksDBStore::DeleteDentry(InodeID parent, const std::string& name) {
+    auto key = EncodeDentryKey(parent, name);
+    auto status = db_->Delete(rocksdb::WriteOptions(), key);
+    if (!status.ok()) {
+        LOG_ERROR("Failed to delete dentry: %s", status.ToString().c_str());
+        return Status::IO("Failed to delete dentry: " + status.ToString());
+    }
+    return Status::Ok();
+}
+
+Status RocksDBStore::DeleteInode(InodeID inode) {
+    auto key = EncodeInodeKey(inode);
+    auto status = db_->Delete(rocksdb::WriteOptions(), key);
+    if (!status.ok()) {
+        LOG_ERROR("Failed to delete inode: %s", status.ToString().c_str());
+        return Status::IO("Failed to delete inode: " + status.ToString());
+    }
+    return Status::Ok();
+}
+
+Status RocksDBStore::DeleteLayout(InodeID inode) {
+    auto key = EncodeLayoutKey(inode);
+    auto status = db_->Delete(rocksdb::WriteOptions(), key);
+    if (!status.ok()) {
+        LOG_ERROR("Failed to delete layout: %s", status.ToString().c_str());
+        return Status::IO("Failed to delete layout: " + status.ToString());
+    }
+    return Status::Ok();
+}
+
+// ================================
+// 目录扫描
+// ================================
+
+Status RocksDBStore::ListDentries(InodeID parent, std::vector<Dentry>* entries) {
+    entries->clear();
+
+    // 构造前缀: "D" + parent(8字节)
+    std::string prefix;
+    prefix.push_back('D');
+    for (int i = 0; i < 8; ++i) {
+        prefix.push_back((parent >> (i * 8)) & 0xFF);
+    }
+    prefix.push_back('/');
+
+    rocksdb::ReadOptions read_options;
+    std::unique_ptr<rocksdb::Iterator> it(db_->NewIterator(read_options));
+
+    for (it->Seek(prefix); it->Valid(); it->Next()) {
+        auto key = it->key().ToString();
+        // 检查前缀匹配
+        if (key.compare(0, prefix.size(), prefix) != 0) {
+            break;
+        }
+
+        // 提取文件名
+        std::string name = key.substr(prefix.size());
+        auto dentry = DecodeDentryValue(it->value().ToString());
+        dentry.name = name;
+        entries->push_back(dentry);
+    }
+
+    if (!it->status().ok()) {
+        LOG_ERROR("Iterator error: %s", it->status().ToString().c_str());
+        return Status::IO("Failed to list dentries: " + it->status().ToString());
+    }
+
+    return Status::Ok();
 }
 
 } // namespace nebulastore::metadata

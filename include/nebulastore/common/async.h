@@ -4,7 +4,8 @@
 #include <optional>
 #include <exception>
 #include <type_traits>
-#include "aifs/common/types.h"
+#include <utility>
+#include "nebulastore/common/types.h"
 
 namespace nebulastore {
 
@@ -35,24 +36,24 @@ public:
         std::exception_ptr exception_;
     };
 
-    explicit AsyncResult(std::coroutine_handle<promise_type> handle)
+    explicit AsyncTask(std::coroutine_handle<promise_type> handle)
         : handle_(handle) {}
 
-    ~AsyncResult() {
+    ~AsyncTask() {
         if (handle_) {
             handle_.destroy();
         }
     }
 
     // 禁止拷贝
-    AsyncResult(const AsyncResult&) = delete;
-    AsyncResult& operator=(const AsyncResult&) = delete;
+    AsyncTask(const AsyncTask&) = delete;
+    AsyncTask& operator=(const AsyncTask&) = delete;
 
     // 支持移动
-    AsyncResult(AsyncResult&& other) noexcept
+    AsyncTask(AsyncTask&& other) noexcept
         : handle_(std::exchange(other.handle_, {})) {}
 
-    AsyncResult& operator=(AsyncResult&& other) noexcept {
+    AsyncTask& operator=(AsyncTask&& other) noexcept {
         if (this != &other) {
             if (handle_) {
                 handle_.destroy();
@@ -72,6 +73,25 @@ public:
             std::rethrow_exception(handle_.promise().exception_);
         }
 
+        return std::move(handle_.promise().value_);
+    }
+
+    // === awaitable 接口 ===
+    bool await_ready() noexcept {
+        return handle_.done();
+    }
+
+    void await_suspend(std::coroutine_handle<> continuation) {
+        // TODO: 实现真正的异步调度
+        // 当前: 直接 resume，同步执行
+        handle_.resume();
+        continuation.resume();
+    }
+
+    T await_resume() {
+        if (handle_.promise().exception_) {
+            std::rethrow_exception(handle_.promise().exception_);
+        }
         return std::move(handle_.promise().value_);
     }
 
@@ -130,6 +150,23 @@ public:
             handle_.resume();
         }
 
+        if (handle_.promise().exception_) {
+            std::rethrow_exception(handle_.promise().exception_);
+        }
+    }
+
+    // === awaitable 接口 ===
+    bool await_ready() noexcept {
+        return handle_.done();
+    }
+
+    void await_suspend(std::coroutine_handle<> continuation) {
+        // TODO: 实现真正的异步调度
+        handle_.resume();
+        continuation.resume();
+    }
+
+    void await_resume() {
         if (handle_.promise().exception_) {
             std::rethrow_exception(handle_.promise().exception_);
         }

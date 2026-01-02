@@ -1,0 +1,38 @@
+# Build
+build/
+build-*/
+*.o
+*.a
+*.so
+*.dylib
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+third_party/mongoose/*.o
+
+# Test artifacts
+/tmp/
+
+# Core dumps
+core
+core.*
+
+# Claude Code
+.planning/

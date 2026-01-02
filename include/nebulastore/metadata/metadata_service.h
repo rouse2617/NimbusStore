@@ -5,6 +5,7 @@
 #include <string>
 #include "nebulastore/common/types.h"
 #include "nebulastore/common/async.h"
+#include "nebulastore/common/result.h"
 
 namespace nebulastore::metadata {
 
@@ -174,6 +175,9 @@ public:
     explicit MetaPartition(const Config& config);
     ~MetaPartition();
 
+    // 获取配置
+    const Config& GetConfig() const { return config_; }
+
     // 初始化
     Status Init();
 
@@ -210,6 +214,13 @@ public:
         GroupID gid
     );
 
+    // === 删除操作 ===
+    AsyncTask<Status> DeleteDentry(InodeID parent, const std::string& name);
+    AsyncTask<Status> DeleteInode(InodeID inode);
+
+    // === 目录扫描 ===
+    AsyncTask<Status> ListDentries(InodeID parent, std::vector<Dentry>* entries);
+
     // === 规模自适应 (沧海设计) ===
 
     enum class ScaleMode {
@@ -229,10 +240,10 @@ private:
     Config config_;
     ScaleMode mode_;
 
-    // 内存索引 (CubeFS 设计)
-    class BTreeIndex;
-    std::unique_ptr<BTreeIndex> inode_tree_;
-    std::unique_ptr<BTreeIndex> dentry_tree_;
+    // 内存索引已禁用 (TODO: 实现 BTreeIndex)
+    // class BTreeIndex;
+    // std::unique_ptr<BTreeIndex> inode_tree_;
+    // std::unique_ptr<BTreeIndex> dentry_tree_;
 
     // RocksDB 存储
     std::unique_ptr<MetadataStore> store_;
@@ -324,17 +335,19 @@ public:
         InodeID* inode_id
     ) override;
 
-private:
+    // === 测试辅助方法 (public for testing) ===
+
     // 路径解析: /a/b/c → ["a", "b", "c"]
-    std::pair<Status, std::vector<std::string>> ParsePath(
+    Result<std::vector<std::string>> ParsePath(
         const std::string& path
     );
 
-    // 根据 inode_id 查找对应的分区
-    MetaPartition* LocatePartition(InodeID inode_id);
-
     // 生成新的 inode ID
     InodeID GenerateInodeID();
+
+private:
+    // 根据 inode_id 查找对应的分区
+    MetaPartition* LocatePartition(InodeID inode_id);
 
     Config config_;
     std::mutex next_inode_mutex_;

@@ -4,7 +4,7 @@
 #include <rocksdb/write_batch.h>
 #include <rocksdb/options.h>
 #include <memory>
-#include "aifs/metadata/metadata_service.h"
+#include "nebulastore/metadata/metadata_service.h"
 
 namespace nebulastore::metadata {
 
@@ -46,12 +46,15 @@ public:
         FileLayout* layout
     ) override;
 
-private:
-    Config config_;
-    rocksdb::DB* db_;
-    rocksdb::Options options_;
+    // === 删除操作 ===
+    Status DeleteDentry(InodeID parent, const std::string& name);
+    Status DeleteInode(InodeID inode);
+    Status DeleteLayout(InodeID inode);
 
-    // === Key 编码 ===
+    // === 目录扫描 ===
+    Status ListDentries(InodeID parent, std::vector<Dentry>* entries);
+
+    // === Key/Value 编码 (public for RocksDBTransaction) ===
 
     // dentry key: "D" + parent_inode(8字节) + name
     std::string EncodeDentryKey(InodeID parent, const std::string& name);
@@ -62,8 +65,7 @@ private:
     // layout key: "L" + inode_id(8字节)
     std::string EncodeLayoutKey(InodeID inode);
 
-    // === Value 编码 ===
-
+    // Value 编码/解码
     std::string EncodeDentryValue(const Dentry& dentry);
     Dentry DecodeDentryValue(const std::string& value);
 
@@ -72,6 +74,11 @@ private:
 
     std::string EncodeLayoutValue(const FileLayout& layout);
     FileLayout DecodeLayoutValue(const std::string& value);
+
+private:
+    Config config_;
+    rocksdb::DB* db_;
+    rocksdb::Options options_;
 };
 
 // ================================

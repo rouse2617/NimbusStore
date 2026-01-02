@@ -113,12 +113,18 @@ public:
     ErrorCode code() const { return code_; }
     const std::string& message() const { return msg_; }
 
-    static Status OK() { return Status(); }
+    static Status Ok() { return Status(); }
     static Status NotFound(const std::string& msg = "") {
         return Status(ErrorCode::kNotFound, msg);
     }
     static Status Exist(const std::string& msg = "") {
         return Status(ErrorCode::kExist, msg);
+    }
+    static Status InvalidArgument(const std::string& msg = "") {
+        return Status(ErrorCode::kInvalidArgument, msg);
+    }
+    static Status NotDirectory(const std::string& msg = "") {
+        return Status(ErrorCode::kNotDirectory, msg);
     }
     static Status IO(const std::string& msg = "") {
         return Status(ErrorCode::kIOError, msg);
@@ -135,13 +141,22 @@ private:
 class ByteBuffer {
 public:
     ByteBuffer() = default;
-    ByteBuffer(const void* data, size_t size);
-    ByteBuffer(std::vector<uint8_t>&& data);
+    ByteBuffer(const void* data, size_t size) {
+        const uint8_t* ptr = static_cast<const uint8_t*>(data);
+        data_.assign(ptr, ptr + size);
+    }
+    ByteBuffer(std::vector<uint8_t>&& data) : data_(std::move(data)) {}
 
     const uint8_t* data() const { return data_.data(); }
     uint8_t* data() { return data_.data(); }
     size_t size() const { return data_.size(); }
     bool empty() const { return data_.empty(); }
+
+    void assign(const void* ptr, size_t size) {
+        const uint8_t* p = static_cast<const uint8_t*>(ptr);
+        data_.assign(p, p + size);
+    }
+    void assign(std::vector<uint8_t>&& vec) { data_ = std::move(vec); }
 
     std::string ToString() const {
         return std::string(reinterpret_cast<const char*>(data_.data()), data_.size());
