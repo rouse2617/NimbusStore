@@ -143,6 +143,37 @@ make test       # Basic tests
 make s3-test    # S3 module tests
 ```
 
+## Roadmap / 未来规划
+
+### Phase 1: Core Enhancement / 核心增强
+- [ ] **Redis Metadata Backend** - Add Redis as alternative metadata storage / 添加 Redis 作为可选元数据存储
+- [ ] **Authentication** - Implement AWS Signature V4 authentication / 实现 AWS Signature V4 认证
+- [ ] **Multipart Upload** - Support large file uploads / 支持大文件分片上传
+- [ ] **Object Versioning** - Enable version control for objects / 启用对象版本控制
+
+### Phase 2: Distributed Architecture / 分布式架构
+- [ ] **Raft Consensus** - Metadata replication with Raft / 使用 Raft 实现元数据复制
+- [ ] **Data Sharding** - Horizontal scaling for data storage / 数据存储水平扩展
+- [ ] **Load Balancing** - Distribute requests across nodes / 请求负载均衡
+
+### Phase 3: AI Training Optimization / AI 训练优化
+- [ ] **Batch Read API** - Optimized for training data loading / 针对训练数据加载优化的批量读取 API
+- [ ] **Prefetching** - Intelligent data prefetch for sequential access / 顺序访问的智能数据预取
+- [ ] **Caching Layer** - Multi-tier caching (memory/SSD/disk) / 多级缓存（内存/SSD/磁盘）
+- [ ] **RDMA Support** - High-performance network for GPU clusters / GPU 集群高性能网络支持
+
+### Phase 4: Enterprise Features / 企业级功能
+- [ ] **POSIX Interface** - FUSE-based filesystem mount / 基于 FUSE 的文件系统挂载
+- [ ] **Lifecycle Policies** - Automatic data tiering and expiration / 自动数据分层和过期策略
+- [ ] **Cross-Region Replication** - Geo-distributed data redundancy / 跨地域数据冗余
+- [ ] **Monitoring & Metrics** - Prometheus/Grafana integration / Prometheus/Grafana 集成
+
+## Contributing / 贡献
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+欢迎贡献代码！请随时提交 Pull Request。
+
 ## License
 
 MIT License
